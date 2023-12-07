@@ -1,0 +1,36 @@
+5.Find all the mentors with who has the mentee's count more than 15
+
+db.getCollection('mentors').aggregate(
+  [
+    {
+      $lookup: {
+        from: 'users',
+        localField: 'mentor_id',
+        foreignField: 'mentor_id',
+        as: 'mentee'
+      }
+    },
+    {
+      $unwind: {
+        path: '$mentee',
+        preserveNullAndEmptyArrays: false
+      }
+    },
+    {
+      $group: {
+        _id: '$mentor_id',
+        mentor_name: { $first: '$name' },
+        mentee_count: { $sum: 1 }
+      }
+    },
+    {
+      $project: {
+        name: 1,
+        mentee_count: 1,
+        mentor_id: 1,
+        mentor_name: 1
+      }
+    }
+  ],
+  { maxTimeMS: 60000, allowDiskUse: true }
+);
